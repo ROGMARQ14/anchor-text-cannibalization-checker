@@ -16,6 +16,10 @@ def is_non_seo_url(url):
     if any(char in url for char in ['#', '?', '=']):
         return True
     
+    # Check for external URLs
+    if not url.startswith(('/', 'https://transcendinfra.com')):
+        return True
+    
     # Pagination patterns
     if re.search(r'/page/\d+/?', url_lower):
         return True
@@ -30,6 +34,15 @@ def is_non_seo_url(url):
         '/cookie-policy', '/legal'
     ]
     
+    # Job-related patterns
+    job_related_patterns = [
+        '/career', '/careers', '/jobs', '/job/',
+        '/staff', '/team', '/position', '/positions',
+        '/opportunities', '/opportunity',
+        '/work-with-us', '/join-us', '/join-our-team',
+        '/employment', '/vacancies', '/vacancy'
+    ]
+    
     # Content types to exclude
     content_type_patterns = [
         '/author/', '/authors/',
@@ -41,11 +54,30 @@ def is_non_seo_url(url):
         '/blog/author/', '/blog/tag/',
         '/category/', '/tag/',
         '/feed/', '/rss/',
-        '/archive/', '/archives/'
+        '/archive/', '/archives/',
+        '/podcast', '/podcasts',
+        '/about', '/about-us',
+        '/faq', '/faqs',
+        '/help/', '/support/',
+        '/contact', '/contact-us',
+        '/demo', '/request-demo',
+        '/resources/', '/resource/',
+        '/download', '/downloads',
+        '/whitepaper', '/whitepapers',
+        '/ebook', '/ebooks',
+        '/newsletter', '/subscribe',
+        '/testimonial', '/testimonials',
+        '/review', '/reviews',
+        '/partner', '/partners',
+        '/integration', '/integrations',
+        '/api/', '/api-doc', '/documentation',
+        '/changelog', '/release-notes',
+        '/status', '/system-status',
+        '/feedback'
     ]
     
     # Check if URL matches any exclusion pattern
-    exclude_patterns = user_related_patterns + content_type_patterns
+    exclude_patterns = user_related_patterns + job_related_patterns + content_type_patterns
     return any(pattern in url_lower for pattern in exclude_patterns)
 
 def get_csv_download_link(df, filename):
