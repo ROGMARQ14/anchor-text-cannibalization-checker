@@ -2,6 +2,10 @@ import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
 import re
+import json
+from io import BytesIO
+import base64
+from datetime import datetime
 
 def is_non_seo_url(url):
     """Check if URL should be excluded from SEO analysis."""
@@ -44,9 +48,46 @@ def is_non_seo_url(url):
     exclude_patterns = user_related_patterns + content_type_patterns
     return any(pattern in url_lower for pattern in exclude_patterns)
 
-st.set_page_config(page_title="Anchor Text Analyzer", layout="wide")
+def get_csv_download_link(df, filename):
+    """Generate a download link for a DataFrame as CSV"""
+    csv = df.to_csv(index=False)
+    b64 = base64.b64encode(csv.encode()).decode()
+    href = f'<a href="data:file/csv;base64,{b64}" download="{filename}">Download {filename}</a>'
+    return href
 
-st.title("Anchor Text Analyzer")
+def export_detailed_analysis(exact_match_anchors, anchors, filtered_df):
+    """Create a detailed analysis export DataFrame"""
+    rows = []
+    for anchor in exact_match_anchors:
+        total_occurrences = len(anchors[anchor])
+        unique_destinations = len(exact_match_anchors[anchor])
+        
+        # Get all destinations and their counts
+        for target_url in exact_match_anchors[anchor]:
+            url_count = anchors[anchor].count(target_url)
+            percentage = (url_count / total_occurrences) * 100
+            
+            # Get source pages for this anchor and destination
+            sources = filtered_df[
+                (filtered_df['Anchor'] == anchor) & 
+                (filtered_df['Destination'] == target_url)
+            ]['Source'].unique()
+            
+            rows.append({
+                'Anchor Text': anchor,
+                'Total Occurrences': total_occurrences,
+                'Unique Destinations': unique_destinations,
+                'Destination URL': target_url,
+                'Times Used': url_count,
+                'Usage Percentage': f"{percentage:.1f}%",
+                'Source Pages': '; '.join(sources)
+            })
+    
+    return pd.DataFrame(rows)
+
+st.set_page_config(page_title="Anchor Text Cannibalization Analyzer", layout="wide")
+
+st.title("Anchor Text Cannibalization Analyzer")
 st.markdown("""
 This tool analyzes your internal linking structure to identify potential SEO issues 
 where the same anchor text points to different URLs (anchor text cannibalization).
@@ -107,12 +148,24 @@ if uploaded_file is not None:
 
         # Display results
         if exact_match_anchors:
-            st.warning(f"Found {len(exact_match_anchors)} cases of anchor text in SEO-valuable content")
+            st.warning(f"Found {len(exact_match_anchors)} cases of anchor text cannibalization in SEO-valuable content")
             
             # Create tabs for different views
             tab1, tab2 = st.tabs(["Detailed Analysis", "Visualization"])
             
             with tab1:
+                # Create export DataFrame
+                export_df = export_detailed_analysis(exact_match_anchors, anchors, filtered_df)
+                
+                # Add export button
+                st.markdown("### Export Options")
+                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                st.markdown(
+                    get_csv_download_link(export_df, f"anchor_text_analysis_{timestamp}.csv"),
+                    unsafe_allow_html=True
+                )
+                
+                # Display detailed analysis
                 for anchor in exact_match_anchors:
                     total_occurrences = len(anchors[anchor])
                     unique_destinations = len(exact_match_anchors[anchor])
@@ -129,13 +182,15 @@ if uploaded_file is not None:
                             percentage = (url_count / total_occurrences) * 100
                             st.markdown(f"- {target_url} (used {url_count} times - {percentage:.1f}% of occurrences)")
                         
-                        # Show source pages for this anchor text
                         st.markdown("\n**Source pages using this anchor text:**")
                         sources = filtered_df[filtered_df['Anchor'] == anchor]['Source'].unique()
                         for source in sources:
                             st.markdown(f"- {source}")
             
             with tab2:
+                st.markdown("### Export Options")
+                st.markdown("*Note: You can download each chart as PNG by using the camera icon in the chart's toolbar*")
+                
                 # Create two bar charts: one for total occurrences and one for unique destinations
                 tab2_col1, tab2_col2 = st.columns(2)
                 
@@ -155,7 +210,9 @@ if uploaded_file is not None:
                         title="Total Occurrences of Each Anchor Text",
                         xaxis_title="Anchor Text",
                         yaxis_title="Number of Total Uses",
-                        height=500
+                        height=500,
+                        showlegend=True,
+                        modebar_add=['downloadImage']
                     )
                     st.plotly_chart(fig1, use_container_width=True)
                 
@@ -175,7 +232,9 @@ if uploaded_file is not None:
                         title="Number of Different Destinations per Anchor Text",
                         xaxis_title="Anchor Text",
                         yaxis_title="Number of Different Destinations",
-                        height=500
+                        height=500,
+                        showlegend=True,
+                        modebar_add=['downloadImage']
                     )
                     st.plotly_chart(fig2, use_container_width=True)
         else:
