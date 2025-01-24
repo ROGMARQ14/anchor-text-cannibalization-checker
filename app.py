@@ -16,7 +16,10 @@ uploaded_file = st.file_uploader("Upload your CSV file", type=['csv'])
 if uploaded_file is not None:
     try:
         # Read the CSV file
-        df = pd.read_csv(uploaded_file)
+        df = pd.read_csv(uploaded_file, 
+                        sep=',',          # Explicitly set comma as separator
+                        quoting=1,        # QUOTE_ALL - Handle fields with commas
+                        encoding='utf-8') # Ensure proper encoding
         
         # Create a dictionary of anchor text and the pages it links to
         anchors = {}
