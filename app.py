@@ -1,6 +1,48 @@
 import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
+import re
+
+def is_non_seo_url(url):
+    """Check if URL should be excluded from SEO analysis."""
+    # Convert to lowercase for case-insensitive matching
+    url_lower = url.lower()
+    
+    # Special parameters check
+    if any(char in url for char in ['#', '?', '=']):
+        return True
+    
+    # Pagination patterns
+    if re.search(r'/page/\d+/?', url_lower):
+        return True
+    
+    # User-related pages
+    user_related_patterns = [
+        '/login', '/signin', '/signup', '/register',
+        '/dashboard', '/account', '/profile',
+        '/terms', '/privacy', '/tos', '/terms-of-service',
+        '/forgot-password', '/reset-password',
+        '/my-', '/user/', '/users/',
+        '/cookie-policy', '/legal'
+    ]
+    
+    # Content types to exclude
+    content_type_patterns = [
+        '/author/', '/authors/',
+        '/webinar', '/webinars',
+        '/news/', '/press/',
+        '/use-case', '/use-cases',
+        '/case-study', '/case-studies',
+        '/events/', '/event/',
+        '/blog/author/', '/blog/tag/',
+        '/category/', '/tag/',
+        '/feed/', '/rss/',
+        '/archive/', '/archives/'
+    ]
+    
+    # Check if URL matches any exclusion pattern
+    exclude_patterns = user_related_patterns + content_type_patterns
+    return any(pattern in url_lower for pattern in exclude_patterns)
 
 st.set_page_config(page_title="Anchor Text Cannibalization Analyzer", layout="wide")
 
@@ -22,7 +64,10 @@ if uploaded_file is not None:
         else:  # Excel file
             df = pd.read_excel(uploaded_file)
         
-        # Apply filters
+        # Initial row count
+        total_rows = len(df)
+        
+        # Apply basic filters
         filtered_df = df[
             (df['Type'] == 'Hyperlink') &  # Only Hyperlinks
             (df['Anchor'].notna()) &       # Non-empty Anchor text
@@ -30,8 +75,19 @@ if uploaded_file is not None:
             (df['Link Position'] == 'Content')  # Link Position is Content
         ].copy()
         
+        # Filter out non-SEO URLs
+        filtered_df = filtered_df[
+            ~filtered_df['Source'].apply(is_non_seo_url) &
+            ~filtered_df['Destination'].apply(is_non_seo_url)
+        ]
+        
         # Show filtering results
-        st.info(f"Original rows: {len(df)} | Filtered rows: {len(filtered_df)}")
+        st.info(f"""
+        Filtering results:
+        - Original rows: {total_rows}
+        - After basic filters: {len(df[df['Type'] == 'Hyperlink'])}
+        - Final rows (SEO-valuable content only): {len(filtered_df)}
+        """)
         
         # Create a dictionary of anchor text and the pages it links to
         anchors = {}
@@ -51,7 +107,7 @@ if uploaded_file is not None:
 
         # Display results
         if exact_match_anchors:
-            st.warning(f"Found {len(exact_match_anchors)} cases of anchor text cannibalization")
+            st.warning(f"Found {len(exact_match_anchors)} cases of anchor text cannibalization in SEO-valuable content")
             
             # Create tabs for different views
             tab1, tab2 = st.tabs(["Detailed Analysis", "Visualization"])
@@ -89,7 +145,7 @@ if uploaded_file is not None:
                 )
                 st.plotly_chart(fig, use_container_width=True)
         else:
-            st.success("No anchor text cannibalization found! ")
+            st.success("No anchor text cannibalization found in SEO-valuable content!")
 
     except Exception as e:
         st.error(f"Error processing the file: {str(e)}")
