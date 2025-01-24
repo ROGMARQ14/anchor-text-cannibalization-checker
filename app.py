@@ -44,7 +44,7 @@ def is_non_seo_url(url):
     exclude_patterns = user_related_patterns + content_type_patterns
     return any(pattern in url_lower for pattern in exclude_patterns)
 
-st.set_page_config(page_title="Anchor Text Cannibalization Analyzer", layout="wide")
+st.set_page_config(page_title="Anchor Text Analyzer", layout="wide")
 
 st.title("Anchor Text Cannibalization Analyzer")
 st.markdown("""
