@@ -114,11 +114,20 @@ if uploaded_file is not None:
             
             with tab1:
                 for anchor in exact_match_anchors:
-                    with st.expander(f"Anchor Text: {anchor} ({len(anchors[anchor])} total occurrences)"):
-                        st.markdown("**Links to these destinations:**")
+                    total_occurrences = len(anchors[anchor])
+                    unique_destinations = len(exact_match_anchors[anchor])
+                    with st.expander(f"Anchor Text: {anchor}"):
+                        st.markdown(f"""
+                        **Statistics:**
+                        - Total occurrences: {total_occurrences}
+                        - Number of different destinations: {unique_destinations}
+                        """)
+                        
+                        st.markdown("\n**Links to these destinations:**")
                         for target_url in exact_match_anchors[anchor]:
                             url_count = anchors[anchor].count(target_url)
-                            st.markdown(f"- {target_url} (used {url_count} times)")
+                            percentage = (url_count / total_occurrences) * 100
+                            st.markdown(f"- {target_url} (used {url_count} times - {percentage:.1f}% of occurrences)")
                         
                         # Show source pages for this anchor text
                         st.markdown("\n**Source pages using this anchor text:**")
@@ -127,23 +136,48 @@ if uploaded_file is not None:
                             st.markdown(f"- {source}")
             
             with tab2:
-                # Create a bar chart showing the most problematic anchor texts
-                anchor_counts = {anchor: len(urls) for anchor, urls in exact_match_anchors.items()}
-                fig = go.Figure(data=[
-                    go.Bar(
-                        x=list(anchor_counts.keys()),
-                        y=list(anchor_counts.values()),
-                        text=list(anchor_counts.values()),
-                        textposition='auto',
+                # Create two bar charts: one for total occurrences and one for unique destinations
+                tab2_col1, tab2_col2 = st.columns(2)
+                
+                with tab2_col1:
+                    # Chart for total occurrences
+                    total_occurrences = {anchor: len(anchors[anchor]) for anchor in exact_match_anchors}
+                    fig1 = go.Figure(data=[
+                        go.Bar(
+                            x=list(total_occurrences.keys()),
+                            y=list(total_occurrences.values()),
+                            text=list(total_occurrences.values()),
+                            textposition='auto',
+                            name='Total Occurrences'
+                        )
+                    ])
+                    fig1.update_layout(
+                        title="Total Occurrences of Each Anchor Text",
+                        xaxis_title="Anchor Text",
+                        yaxis_title="Number of Total Uses",
+                        height=500
                     )
-                ])
-                fig.update_layout(
-                    title="Number of Different Destinations per Anchor Text",
-                    xaxis_title="Anchor Text",
-                    yaxis_title="Number of Different Destinations",
-                    height=500
-                )
-                st.plotly_chart(fig, use_container_width=True)
+                    st.plotly_chart(fig1, use_container_width=True)
+                
+                with tab2_col2:
+                    # Chart for unique destinations
+                    unique_destinations = {anchor: len(urls) for anchor, urls in exact_match_anchors.items()}
+                    fig2 = go.Figure(data=[
+                        go.Bar(
+                            x=list(unique_destinations.keys()),
+                            y=list(unique_destinations.values()),
+                            text=list(unique_destinations.values()),
+                            textposition='auto',
+                            name='Unique Destinations'
+                        )
+                    ])
+                    fig2.update_layout(
+                        title="Number of Different Destinations per Anchor Text",
+                        xaxis_title="Anchor Text",
+                        yaxis_title="Number of Different Destinations",
+                        height=500
+                    )
+                    st.plotly_chart(fig2, use_container_width=True)
         else:
             st.success("No anchor text cannibalization found in SEO-valuable content!")
 
