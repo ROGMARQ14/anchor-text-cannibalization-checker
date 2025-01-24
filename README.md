@@ -8,11 +8,23 @@ Anchor text cannibalization occurs when the same anchor text is used to link to 
 
 ## Features
 
-- Upload and analyze files containing internal linking data
+- Upload and analyze CSV/Excel files containing internal linking data
+- Smart filtering of URLs to focus on SEO-valuable content:
+  - Excludes URLs with parameters (#, ?, =)
+  - Filters out pagination URLs (/page/1/, etc.)
+  - Removes user-related pages (login, signup, etc.)
+  - Excludes non-SEO content (authors, webinars, news, etc.)
+- Detailed analysis of anchor text usage:
+  - Total occurrences of each anchor text
+  - Number of different destinations per anchor text
+  - Percentage distribution of destinations
+  - Source pages for each anchor text
+- Visual representation through dual charts:
+  - Total occurrences visualization
+  - Unique destinations comparison
 - Interactive visualization of problematic anchor texts
 - Detailed breakdown of each cannibalization case
 - User-friendly interface with expandable sections
-- Visual representation of data through charts
 
 ## Installation
 
@@ -42,6 +54,20 @@ streamlit run app.py
    - Total number of cannibalization cases
    - Detailed breakdown for each anchor text
    - Visual representation of the data
+
+## Analysis Results
+
+The tool provides two main views:
+
+1. **Detailed Analysis Tab**
+   - Complete statistics for each anchor text
+   - Total occurrences and unique destinations
+   - Percentage breakdown of URL usage
+   - List of source pages using each anchor text
+
+2. **Visualization Tab**
+   - Total Occurrences Chart: Shows how many times each anchor text appears
+   - Different Destinations Chart: Shows how many unique URLs each anchor text points to
 
 ## File Format
 
