@@ -8,7 +8,7 @@ Anchor text cannibalization occurs when the same anchor text is used to link to 
 
 ## Features
 
-- Upload and analyze CSV files containing internal linking data
+- Upload and analyze files containing internal linking data
 - Interactive visualization of problematic anchor texts
 - Detailed breakdown of each cannibalization case
 - User-friendly interface with expandable sections
@@ -29,26 +29,28 @@ pip install -r requirements.txt
 streamlit run app.py
 ```
 
-2. Upload your CSV file through the web interface
-   - Your CSV file must contain these columns:
+2. Upload your file through the web interface
+   - Your file must contain these columns:
      - `Source`: The page where the link is located
      - `Destination`: The page being linked to
      - `Anchor`: The anchor text used for the link
+   - Supported file formats:
+     - CSV files (.csv)
+     - Excel files (.xlsx, .xls)
 
 3. View the analysis results:
    - Total number of cannibalization cases
    - Detailed breakdown for each anchor text
    - Visual representation of the data
 
-## CSV File Format
+## File Format
 
-Your CSV file should follow this structure:
+Your file should follow this structure (shown as a table):
 
-```csv
-Source,Destination,Anchor
-https://example.com/page1,https://example.com/target1,Example Anchor Text
-https://example.com/page2,https://example.com/target2,Example Anchor Text
-```
+| Source | Destination | Anchor |
+|--------|-------------|--------|
+| https://example.com/page1 | https://example.com/target1 | Example Anchor Text |
+| https://example.com/page2 | https://example.com/target2 | Example Anchor Text |
 
 ## Requirements
 
@@ -56,6 +58,7 @@ https://example.com/page2,https://example.com/target2,Example Anchor Text
 - Streamlit 1.29.0
 - Pandas 2.1.4
 - Plotly 5.18.0
+- OpenPyXL 3.1.2
 
 ## License
 
