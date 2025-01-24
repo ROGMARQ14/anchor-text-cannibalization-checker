@@ -11,15 +11,19 @@ where the same anchor text points to different URLs (anchor text cannibalization
 """)
 
 # File uploader
-uploaded_file = st.file_uploader("Upload your CSV file", type=['csv'])
+uploaded_file = st.file_uploader("Upload your file", type=['csv', 'xlsx', 'xls'])
 
 if uploaded_file is not None:
     try:
-        # Read the CSV file
-        df = pd.read_csv(uploaded_file, 
-                        sep=',',          # Explicitly set comma as separator
-                        quoting=1,        # QUOTE_ALL - Handle fields with commas
-                        encoding='utf-8') # Ensure proper encoding
+        # Read the file based on its type
+        file_type = uploaded_file.name.split('.')[-1]
+        if file_type == 'csv':
+            df = pd.read_csv(uploaded_file, 
+                           sep=',',          # Explicitly set comma as separator
+                           quoting=1,        # QUOTE_ALL - Handle fields with commas
+                           encoding='utf-8') # Ensure proper encoding
+        else:  # Excel file
+            df = pd.read_excel(uploaded_file)
         
         # Create a dictionary of anchor text and the pages it links to
         anchors = {}
@@ -75,4 +79,4 @@ if uploaded_file is not None:
 
     except Exception as e:
         st.error(f"Error processing the file: {str(e)}")
-        st.markdown("Please make sure your CSV file has the following columns: **Source**, **Destination**, and **Anchor**")
+        st.markdown("Please make sure your file has the following columns: **Source**, **Destination**, and **Anchor**")
