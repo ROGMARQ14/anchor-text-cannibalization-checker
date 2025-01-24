@@ -46,7 +46,7 @@ def is_non_seo_url(url):
 
 st.set_page_config(page_title="Anchor Text Analyzer", layout="wide")
 
-st.title("Anchor Text Cannibalization Analyzer")
+st.title("Anchor Text Analyzer")
 st.markdown("""
 This tool analyzes your internal linking structure to identify potential SEO issues 
 where the same anchor text points to different URLs (anchor text cannibalization).
@@ -107,7 +107,7 @@ if uploaded_file is not None:
 
         # Display results
         if exact_match_anchors:
-            st.warning(f"Found {len(exact_match_anchors)} cases of anchor text cannibalization in SEO-valuable content")
+            st.warning(f"Found {len(exact_match_anchors)} cases of anchor text in SEO-valuable content")
             
             # Create tabs for different views
             tab1, tab2 = st.tabs(["Detailed Analysis", "Visualization"])
