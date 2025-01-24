@@ -2,9 +2,9 @@ import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
 
-st.set_page_config(page_title="Anchor Text Cannibalization Analyzer", layout="wide")
+st.set_page_config(page_title="Anchor Text Analyzer", layout="wide")
 
-st.title("Anchor Text Cannibalization Analyzer")
+st.title("Anchor Text Analyzer")
 st.markdown("""
 This tool analyzes your internal linking structure to identify potential SEO issues 
 where the same anchor text points to different URLs (anchor text cannibalization).
